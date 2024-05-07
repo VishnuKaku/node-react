@@ -1,55 +1,61 @@
-import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchEmployeesStart,
+  fetchEmployeesSuccess,
+  fetchEmployeesFailure,
+  searchEmployeeByNameStart,
+  searchEmployeeByNameSuccess,
+  searchEmployeeByNameFailure, 
+  deleteEmployee
+} from "../../redux/EmpSlice";
+import EmployeeService from "../../services/EmployeeService";
 
 const EmployeeList = () => {
-  const [employees, setEmployees] = useState([]);
-  const [searchName, setSearchName] = useState('');
+  const dispatch = useDispatch();
+  const employees = useSelector((state) => state.emp.employees);
+  const loading = useSelector((state) => state.emp.loading);
+  const error = useSelector((state) => state.emp.error);
+  const [searchName, setSearchName] = React.useState('');
 
   useEffect(() => {
     const fetchEmployees = async () => {
+      dispatch(fetchEmployeesStart());
       try {
-        const response = await axios.get("http://localhost:8090/emp/get-all-emps");
-        setEmployees(response.data);
+        const response = await EmployeeService.viewAllEmployees();
+        dispatch(fetchEmployeesSuccess(response.data));
       } catch (error) {
         console.error("Error fetching employees:", error);
-        // Handle error
+        dispatch(fetchEmployeesFailure(error.message));
       }
     };
     fetchEmployees();
-  }, []);
+  }, [dispatch]);
 
   const handleDelete = async (employeeId) => {
-    try {
-      if (!employeeId) {
-        console.error("Invalid employee ID");
-        return;
+    const confirmed = window.confirm("Are you sure you want to delete this employee?");
+    if (confirmed) {
+      dispatch(fetchEmployeesStart());
+      try {
+        await EmployeeService.deleteEmployee(employeeId);
+        dispatch(deleteEmployee(employeeId));
+        console.log("Employee deleted successfully");
+      } catch (error) {
+        console.error("Error deleting employee:", error);
+        dispatch(fetchEmployeesFailure(error.message));
       }
-
-      const confirmed = window.confirm("Are you sure you want to delete this employee?");
-      if (!confirmed) {
-        return;
-      }
-
-      await axios.delete(`http://localhost:8090/emp/delete-emp/${employeeId}`);
-
-      setEmployees(employees.filter((employee) => employee.employeeId !== employeeId));
-      console.log("Employee deleted successfully");
-
-    } catch (error) {
-      console.error("Error deleting employee:", error);
-      // Handle error, e.g., display an error message to the user
     }
-
   };
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    dispatch(searchEmployeeByNameStart());
     try {
-      const response = await axios.get(`http://localhost:8090/emp/get-emp-by-name/${searchName}`);
-      setEmployees(response.data); // Update employee list with search results
+      const response = await EmployeeService.findEmployeeByName(searchName);
+      dispatch(searchEmployeeByNameSuccess(response));
     } catch (error) {
       console.error("Error searching employees:", error);
-      // Handle error
+      dispatch(searchEmployeeByNameFailure(error.message));
     }
   };
 
@@ -68,9 +74,12 @@ const EmployeeList = () => {
         <button type="submit">Search</button>
       </form>
 
+      {loading && <div>Loading...</div>}
+      {error && <div>Error: {error}</div>}
+
       {/* Employee Table */}
       <table className="table">
-      <thead>
+        <thead>
           <tr>
             <th>Employee ID</th>
             <th>First Name</th>
@@ -94,7 +103,6 @@ const EmployeeList = () => {
             </tr>
           ))}
         </tbody>
-
       </table>
     </div>
   );
