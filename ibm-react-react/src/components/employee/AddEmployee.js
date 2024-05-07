@@ -5,21 +5,21 @@ import { Link, useNavigate } from "react-router-dom";
 export default function AddEmployee() {
   let navigate = useNavigate();
 
-  const [user, setUser] = useState({
+  const [emp, setEmp] = useState({
     firstName: "",
     email: "",
     salary: "",
   });
 
-  const { firstName, email, salary } = user;
+  const { firstName, email, salary } = emp;
 
   const onInputChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+    setEmp({ ...emp, [e.target.name]: e.target.value });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    await axios.post("http://localhost:8090/emp/add-emp", user); // Assuming your API endpoint remains the same
+    await axios.post("http://localhost:8090/emp/add-emp", emp); 
     navigate("/");
   };
 
