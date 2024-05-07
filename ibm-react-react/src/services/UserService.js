@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:2000';
+const BASE_URL = 'http://localhost:2000'; // express api
 
 const UserService = {
 

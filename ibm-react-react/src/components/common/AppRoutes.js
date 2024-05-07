@@ -9,7 +9,6 @@ import Register from '../user/Register';
 import Profile from "../user/Profile";
 import Logout from '../user/Logout';
 import { useSelector } from "react-redux";
-
 const AppRoutes = () => {
 
     const loginStatus = useSelector(store => store.user.loginStatus);
@@ -27,6 +26,8 @@ const AppRoutes = () => {
                         <Route path="profile" element={<Profile />} />
                         <Route exact path="/" element={<Home />} />
                         <Route path="*" element={<Page404 />} />
+                        <Route path="/" element={<Employee />} />
+                        
                     </Routes>
                 </BrowserRouter>
             </>
